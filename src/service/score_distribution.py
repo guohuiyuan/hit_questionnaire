@@ -131,7 +131,13 @@ for major_code, major_name in major_mapping.items():
 
     # 添加水印
     try:
-        add_watermark(file_path, file_path, watermark_text="葵妈考研")
+        add_watermark(
+            file_path,
+            file_path,
+            watermark_text="葵妈考研",
+            compress=True,
+            quality=10,
+        )
     except Exception as e:
         print(f"添加水印失败: {e}")
 

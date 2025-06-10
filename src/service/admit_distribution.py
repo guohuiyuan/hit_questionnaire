@@ -123,7 +123,7 @@ def generate_chart(
             angle=30,
             color="gray",
             compress=True,
-            quality=50,
+            quality=10,
         )
         print(f"图表已生成: {output_path}")
     except Exception as e:
