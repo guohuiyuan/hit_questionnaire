@@ -50,7 +50,7 @@ with pd.ExcelWriter(excel_path, engine="openpyxl") as writer:
     )
 
     # 筛选录取状态为已录取且一志愿未录取的数据
-    filtered_df = df[(df["录取状态"] == "已录取") & (df["一志愿录取"] == "否")]
+    df = df[(df["录取状态"] == "已录取") & (df["一志愿录取"] == "否")]
 
     # 记录有调剂数据的专业数量
     valid_major_count = 0
