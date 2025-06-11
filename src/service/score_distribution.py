@@ -9,9 +9,6 @@ project_dir = str(Path(__file__).resolve().parents[2])
 sys.path.append(project_dir)
 from src.utils.watermark_generator import add_watermark
 
-output_folder = "output/初试总分分布"
-os.makedirs(output_folder, exist_ok=True)
-
 # 专业映射
 major_mapping = {
     "所有校区": "所有校区",
@@ -39,15 +36,20 @@ major_mapping = {
     "902-083900-00": "威海网学",
     "902-085400-24": "威海计专",
 }
+
+statistic = "问卷66人机试"
+output_folder = f"output/{statistic}分布"
+os.makedirs(output_folder, exist_ok=True)
+# 读取文件
+input_file = "哈工计算机25考研复试信息表_纠正后_合并.xlsx"
 input_folder = "data"
 
 # 创建ExcelWriter对象，用于保存所有校区的统计数据
 excel_writer = pd.ExcelWriter(
-    os.path.join(output_folder, "各校区初试分数分布统计.xlsx"), engine="openpyxl"
+    os.path.join(output_folder, f"各校区{statistic}分布统计.xlsx"), engine="openpyxl"
 )
 
-# 读取文件
-excel_file = pd.ExcelFile(os.path.join(input_folder, "总复试成绩单.xlsx"))
+excel_file = pd.ExcelFile(os.path.join(input_folder, input_file))
 # 获取指定工作表中的数据
 df = excel_file.parse("Sheet1")
 data = df
@@ -58,8 +60,13 @@ data["完整专业代码"] = (
     + "-"
     + data["研究方向"].str.split("-").str[0]
 )
+data[statistic] = data["复试机试成绩（总分160）（必填）"]
 for major_code, major_name in major_mapping.items():
     print(f"正在处理: {major_name}")
+
+    # 只生成所有校区的统计数据
+    if major_code != "所有校区":
+        continue
 
     # 筛选专业数据
     if major_code == "所有校区":
@@ -79,15 +86,15 @@ for major_code, major_name in major_mapping.items():
     print(f"处理 {major_name}，数据量: {len(major_df)}")
 
     # 定义分数段
-    max_score = major_df["初试总分"].max() // 10 * 10 + 10
-    min_score = major_df["初试总分"].min() // 10 * 10
+    max_score = major_df[statistic].max() // 10 * 10 + 10
+    min_score = major_df[statistic].min() // 10 * 10
     print(f"分数段范围: {min_score}~{max_score}")
-    bins = list(range(min_score, max_score + 10, 10))
+    bins = list(range(int(min_score), int(max_score) + 10, 10))
     labels = [f"[{bins[i]},{bins[i + 1]})" for i in range(len(bins) - 1)]
 
     # 对初试总分进行分组统计
     major_df["分数段"] = pd.cut(
-        major_df["初试总分"], bins=bins, labels=labels, right=False
+        major_df[statistic], bins=bins, labels=labels, right=False
     )
     score_distribution = (
         major_df["分数段"].value_counts().reindex(labels).reset_index(name="人数")
@@ -107,9 +114,9 @@ for major_code, major_name in major_mapping.items():
     width = 0.8  # 矩形宽度
     plt.xticks(rotation=30)
     bars = plt.bar(score_distribution["分数段"], score_distribution["人数"], width)
-    plt.xlabel("初试总分分数段")
+    plt.xlabel(f"{statistic}分数段")
     plt.ylabel("人数")
-    plt.title(f"{major_name}初试总分分布矩形图")
+    plt.title(f"{major_name}{statistic}分布矩形图")
 
     # 在柱子上方添加数值
     for bar in bars:
@@ -124,7 +131,7 @@ for major_code, major_name in major_mapping.items():
         )
 
     # 保存图片
-    file_path = f"{major_name}初试总分分布矩形图.png"
+    file_path = f"{major_name}{statistic}分布矩形图.png"
     file_path = os.path.join(output_folder, file_path)
     plt.savefig(file_path, dpi=300, bbox_inches="tight")  # 提高图片清晰度
     plt.close()
@@ -142,12 +149,12 @@ for major_code, major_name in major_mapping.items():
         print(f"添加水印失败: {e}")
 
     print(f"已生成: {file_path}")
-    print("初试总分分布表：")
+    print(f"{statistic}分布表：")
     print(score_distribution)
     print("-" * 50)  # 分隔线
 
 # 保存Excel文件
 excel_writer.close()
 print(
-    f"\n所有校区统计数据已保存至: {os.path.join(output_folder, '各校区初试分数分布统计.xlsx')}"
+    f"\n所有校区统计数据已保存至: {os.path.join(output_folder, f'各校区{statistic}分布统计.xlsx')}"
 )

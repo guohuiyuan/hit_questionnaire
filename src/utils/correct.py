@@ -15,7 +15,7 @@ key_columns = ['政治', '外语', '业务课一', '业务课二', '初试总分
 cols_to_keep = [col for col in df1.columns if col not in key_columns]
 
 # 根据关联字段合并两个 DataFrame
-merged_df = pd.merge(df1, df2, left_on=key_columns, right_on=['初试政治成绩（必填）', '初试英语成绩（必填）', '初试数学成绩（必填）', '初试专业课（408）成绩（必填）', '初试总分（必填）'], how='inner')
+merged_df = pd.merge(df1, df2, left_on=key_columns, right_on=['初试政治成绩（必填）', '初试英语成绩（必填）', '初试数学成绩（必填）', '初试专业课（408）成绩（必填）', '初试总分（必填）'], how='left')
 
 # 用 df1 的机试原始分和面试成绩更新 df2 的对应列
 for index, row in merged_df.iterrows():
