@@ -49,7 +49,7 @@ try:
     add_watermark(
         save_path,
         save_path,
-        watermark_text="葵妈考研",
+        watermark_text="",
         opacity=30,
         scale=0.8,
         angle=30,
