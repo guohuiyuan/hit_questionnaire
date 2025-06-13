@@ -21,7 +21,9 @@ plt.rcParams["font.sans-serif"] = ["SimHei"]
 plt.rcParams["axes.unicode_minus"] = False
 
 # 提取本科学校（必填）列的数据
-text = " ".join(df["本科学校（必填）"])
+# statistic = "本科学校（必填）"
+statistic = "对26考生的备考建议"
+text = " ".join([str(x) for x in df[statistic] if pd.notna(x)])
 
 # 设置词云字体，Windows 下 WenQuanYi Zen Hei 字体路径示例
 font_path = "C:/Windows/Fonts/simhei.ttf"
@@ -39,9 +41,9 @@ plt.imshow(wordcloud, interpolation="bilinear")
 plt.axis("off")
 
 # 保存图片到本地，你可以修改保存路径和文件名
-output_folder = "output/本科学校"
+output_folder = f"output/{statistic}词云"
 os.makedirs(output_folder, exist_ok=True)
-save_path = f"{output_folder}/本科学校词云.png"
+save_path = f"{output_folder}/{statistic}词云.png"
 plt.savefig(save_path)
 
 # 添加水印
