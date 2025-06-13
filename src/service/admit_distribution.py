@@ -65,6 +65,17 @@ def analyze_major_data(major_df, bin_size=10):
         grouped.loc[(slice(None), "是", "已录取", "是")].groupby("分数段").sum()
     )
 
+    # 计算总人数（假设复试及格为参与分配的唯一标准）
+    total_applicants = (
+        failed_interview + passed_not_admitted + transferred + first_choice
+    )
+
+    # 计算一志愿录取率和总录取率
+    first_choice_rate = (first_choice / total_applicants).fillna(0)
+    overall_acceptance_rate = ((first_choice + transferred) / total_applicants).fillna(
+        0
+    )
+
     # 返回分析结果
     return pd.DataFrame(
         {
@@ -72,6 +83,8 @@ def analyze_major_data(major_df, bin_size=10):
             "复试及格未录取": passed_not_admitted,
             "调剂录取": transferred,
             "一志愿录取": first_choice,
+            "一志愿录取率": first_choice_rate,
+            "总录取率": overall_acceptance_rate,
         },
         index=labels,
     ).fillna(0)
@@ -164,12 +177,34 @@ def process_all_majors(excel_path, major_mapping, output_dir=".", bin_size=10):
 
             # 保存分析结果
             summary = pd.DataFrame({"总计": result.sum()}).T
-            pd.concat([result, summary]).to_excel(
-                excel_writer, sheet_name=major_name[:31]
+            sum = (
+                summary["一志愿录取"]
+                + summary["调剂录取"]
+                + summary["复试及格未录取"]
+                + summary["复试不及格"]
             )
+            summary["一志愿录取率"] = summary["一志愿录取"] / sum
+            summary["总录取率"] = (summary["一志愿录取"] + summary["调剂录取"]) / sum
+            # 先进行数据连接操作
+            combined_result = pd.concat([result, summary])
+
+            # 将需要百分比显示的列转换为字符串格式
+            if "一志愿录取率" in combined_result.columns:
+                combined_result["一志愿录取率"] = combined_result["一志愿录取率"].map(
+                    "{:.2%}".format
+                )
+
+            if "总录取率" in combined_result.columns:
+                combined_result["总录取率"] = combined_result["总录取率"].map(
+                    "{:.2%}".format
+                )
+            combined_result.to_excel(excel_writer, sheet_name=major_name[:31])
 
             # 生成图表（如果有数据）
             if result.sum().sum() > 0:
+                result = result[
+                    ["复试不及格", "复试及格未录取", "调剂录取", "一志愿录取"]
+                ]
                 generate_chart(result, major_name, output_dir)
 
         # 保存Excel文件

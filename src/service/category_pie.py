@@ -10,13 +10,21 @@ sys.path.append(project_dir)
 from src.utils.watermark_generator import add_watermark
 
 # 读取Excel文件
-file_path = 'data/哈工计算机25考研复试信息表_纠正后_合并.xlsx'
+file_path = "data/哈工计算机25考研复试信息表_纠正后_合并.xlsx"
 df = pd.read_excel(file_path)
 
 # statistic = "本科学校类别（必填）"
-statistic = "跨考类别（必填）"
+# statistic = "跨考类别（必填）"
+# statistic = "是否二战及以上（必填）"
+# statistic = "项目经历（必填）"
+# statistic = "论文发表情况（必填）"
+# statistic = "数学建模获奖情况（必填）"
+# statistic = "ICPC竞赛经历（必填）"
+# statistic = "OI竞赛经历（必填）"
+# statistic = "开始复习月份（必填）"
+statistic = "备考状态（必填）"
 # 统计“本科学校类别（必填）”的分布
-df[statistic] = df[statistic].apply(lambda x: x.split('：')[0])
+df[statistic] = df[statistic].apply(lambda x: x.split("：")[0])
 category_counts = df[statistic].value_counts()
 total = category_counts.sum()
 
@@ -24,26 +32,31 @@ total = category_counts.sum()
 category_percentages = (category_counts / total * 100).round(1)
 
 # 创建结果DataFrame
-result_df = pd.DataFrame({
-    statistic: category_counts.index,
-    '人数': category_counts.values,
-    '百分比(%)': category_percentages.values
-})
+result_df = pd.DataFrame(
+    {
+        statistic: category_counts.index,
+        "人数": category_counts.values,
+        "百分比(%)": category_percentages.values,
+    }
+)
 
 # 按人数降序排序
-result_df = result_df.sort_values('人数', ascending=False)
+result_df = result_df.sort_values("人数", ascending=False)
 
 # 设置中文字体和解决负号显示问题
 plt.rcParams["font.sans-serif"] = ["SimHei"]
 plt.rcParams["axes.unicode_minus"] = False
+
 
 # 自定义格式化函数，用于显示人数和百分比
 def make_autopct(values):
     def my_autopct(pct):
         total = sum(values)
         val = int(round(pct * total / 100.0))
-        return f'{val} ({pct:.1f}%)'
+        return f"{val} ({pct:.1f}%)"
+
     return my_autopct
+
 
 # 创建图表
 fig, ax = plt.subplots(figsize=(10, 8))
@@ -61,21 +74,24 @@ wedges, texts, autotexts = ax.pie(
     startangle=90,
     explode=explode,
     colors=plt.cm.Paired.colors,
-    wedgeprops=dict(width=0.4)  # 控制饼图厚度（甜甜圈样式）
+    wedgeprops=dict(width=0.4),  # 控制饼图厚度（甜甜圈样式）
 )
 
 # 添加图例并美化
-legend = ax.legend(wedges, category_counts.index,
-                   title=f"{statistic}分布",
-                   loc="center left",
-                   bbox_to_anchor=(1, 0, 0.5, 1),
-                   prop={'size': 12})
+legend = ax.legend(
+    wedges,
+    category_counts.index,
+    title=f"{statistic}分布",
+    loc="center left",
+    bbox_to_anchor=(1, 0, 0.5, 1),
+    prop={"size": 12},
+)
 
 # 设置标题
 ax.set_title(f"{statistic}分布", fontsize=16)
 
 # 保证饼图为圆形
-ax.axis('equal')
+ax.axis("equal")
 
 # 自动调整布局，防止被截断
 plt.tight_layout()
@@ -85,7 +101,7 @@ output_folder = f"output/{statistic}"
 os.makedirs(output_folder, exist_ok=True)
 save_path = f"{output_folder}/{statistic}分布.png"
 
-plt.savefig(save_path, dpi=300, bbox_inches='tight')
+plt.savefig(save_path, dpi=300, bbox_inches="tight")
 
 # 添加水印
 try:
